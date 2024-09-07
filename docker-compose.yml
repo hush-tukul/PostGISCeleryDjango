@@ -1,0 +1,76 @@
+version: '3.8'
+services:
+  db:
+    image: postgis/postgis:latest
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - postgis
+
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis  # Убедимся, что web зависит от redis
+    env_file:
+      - .env
+    command: >
+      sh -c "
+      while ! nc -z db 5432; do sleep 1; done &&
+      python geo_project/manage.py migrate &&
+      echo 'Starting the Django development server...' &&
+      exec python geo_project/manage.py runserver 0.0.0.0:8000
+      "
+    networks:
+      - postgis
+
+
+  celery:
+    build: .
+    command: celery -A geo_project.geo_project.celery worker -l INFO
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0  # Redis connection for Celery
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - PYTHONPATH=/app
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    restart: always
+    env_file:
+      - .env
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    networks:
+      - postgis
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8989:8080"
+    networks:
+      - postgis
+
+networks:
+  postgis:
+    driver: bridge
+
+volumes:
+  postgres_data: {}
