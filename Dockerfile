@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 ENV GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/geo_project:$PYTHONPATH
+
 
 
