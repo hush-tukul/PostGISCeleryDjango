@@ -68,3 +68,15 @@ OPTIONAL
     docker-compose down
     ```
 
+## Background tasks checking
+After ```docker-compose up --build``` put ```docker-compose exec web python geo_project/manage.py shell```
+And after: 
+```
+from geospatial.tasks import fetch_geoserver_workspaces
+result = fetch_geoserver_workspaces.delay()
+result.get(timeout=10)
+```
+If return is like below, everything is fine:
+```{'workspaces': {'workspace': [{'name': 'cite', 'href': 'http://geoserver:8080/geoserver/rest/workspaces/cite.json'}, {'name': 'it.geosolutions', 'href': 'http://geoserver:8080/geoserver/rest/workspaces/it.geosolutions.json'}, {'name': 'ne', 'href': 'http://geoserver:8080/geoserver/rest/workspaces/ne.json'}, {'name': 'nurc', 'href': 'http://geoserver:8080/geoserver/rest/workspaces/nurc.json'}, {'name': 'sde', 'href': 'http://geoserver:8080/geoserver/rest/workspaces/sde.json'}, {'name': 'sf', 'href': 'http://geoserver:8080/geoserver/rest/workspaces/sf.json'}, {'name': 'tiger', 'href': 'http://geoserver:8080/geoserver/rest/workspaces/tiger.json'}, {'name': 'topp', 'href': 'http://geoserver:8080/geoserver/rest/workspaces/topp.json'}]}}
+```
+To exit the IntercativeConsole use Ctrl+D
