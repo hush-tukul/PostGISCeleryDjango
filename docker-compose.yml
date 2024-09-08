@@ -68,6 +68,21 @@ services:
     networks:
       - postgis
 
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.25.3  # Correct GeoServer image
+    ports:
+      - "8080:8080"  # Expose GeoServer on port 8080
+    volumes:
+      - ./geoserver_data:/opt/geoserver/data_dir  # Optional: Persist GeoServer data
+    environment:
+      - GEOSERVER_ADMIN_USER=admin        # Set GeoServer admin user
+      - GEOSERVER_ADMIN_PASSWORD=geoserver  # Set GeoServer admin password
+    networks:
+      - postgis
+    restart: always
+
+
+
 networks:
   postgis:
     driver: bridge
