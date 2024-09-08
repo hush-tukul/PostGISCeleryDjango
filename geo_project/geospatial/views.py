@@ -29,7 +29,7 @@ class PointViewSet(viewsets.ModelViewSet):
 
         # Extract coordinates from the incoming Point
         incoming_location = serializer.validated_data['location']
-        incoming_coords = list(incoming_location.coords)
+        incoming_coords = incoming_location.coords
 
         # Check if a Point with these coordinates already exists
         if self.point_exists(incoming_coords):
@@ -43,12 +43,10 @@ class PointViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def point_exists(self, coords: List[float]) -> bool:
+    def point_exists(self, coords: tuple) -> bool:
         """Check if a Point with the given coordinates already exists in the database."""
-        for point in Point.objects.all():
-            if list(point.location.coords) == coords:
-                return True
-        return False
+        point = GEOSPoint(coords[0], coords[1], srid=4326)
+        return Point.objects.filter(location__equals=point).exists()
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         instance = self.get_object()
@@ -117,12 +115,9 @@ class LineStringViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def line_exists(self, coords: List[float]) -> bool:
-        """Check if a LineString with the given coordinates already exists in the database."""
-        for line in LineString.objects.all():
-            if list(line.path.coords) == coords:
-                return True
-        return False
+    def line_exists(self, coords: list) -> bool:
+        line = GEOSLineString(coords, srid=4326)
+        return LineString.objects.filter(path__equals=line).exists()
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         instance = self.get_object()
