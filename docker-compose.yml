@@ -29,9 +29,11 @@ services:
       sh -c "
       while ! nc -z db 5432; do sleep 1; done &&
       python geo_project/manage.py migrate &&
+      python geo_project/manage.py shell -c \"from django.contrib.auth import get_user_model; User = get_user_model(); superuser_exists = User.objects.filter(username='admin').exists(); print(f'Superuser exists: {superuser_exists}'); superuser_exists or User.objects.create_superuser('admin', 'root@example.com', '12345678')\" &&
       echo 'Starting the Django development server...' &&
       exec python geo_project/manage.py runserver 0.0.0.0:8000
       "
+
     networks:
       - postgis
 

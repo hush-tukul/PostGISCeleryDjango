@@ -4,10 +4,19 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.gis.geos import LineString as GEOSLineString, Point as GEOSPoint
+from rest_framework.views import APIView
+
 from .models import Point, LineString, Polygon
 from .serializers import PointSerializer, LineStringSerializer, PolygonSerializer
 from rest_framework_gis.fields import GeometryField
+from geo_project.celery import debug_task
 
+
+class DebugTaskView(APIView):
+    def get(self, request):
+        # Trigger the debug_task asynchronously
+        task = debug_task.delay()
+        return Response({"task_id": task.id, "status": "Debug task triggered"})
 
 
 class PointViewSet(viewsets.ModelViewSet):
