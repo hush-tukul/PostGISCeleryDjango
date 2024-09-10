@@ -6,3 +6,5 @@ DB_PORT=5432
 SECRET_KEY='django-insecure-li@m6baz=+3ft7@wo$f7w!0+^065)sw(2)s+x#22%s*jf6yj)x'
 GDAL_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/libgdal.so
 REDIS_PASSWORD=password
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
